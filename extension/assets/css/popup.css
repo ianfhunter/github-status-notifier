@@ -78,9 +78,6 @@ a.center {
   height: 12px;
   line-height: 12px;
 }
-.container {
-  height: 30px;
-}
 .blocked {
   color: red;
 }
