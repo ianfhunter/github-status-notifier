@@ -29,8 +29,9 @@ function renderSetting() {
 }
 
 function _openSettings() {
-  const url = `chrome://extensions/?options=${chrome.runtime.id}`;
-  chrome.tabs.create({'url': url});
+  	const github_url = chrome.runtime.getManifest().github_url;
+    const url = `chrome://extensions/?options=${chrome.runtime.id}&github_url=${github_url}`;
+    chrome.tabs.create({ url: url, active: false });
 }
 
 function renderStatuses(notifications) {

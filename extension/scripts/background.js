@@ -1,11 +1,13 @@
+const github_url = chrome.runtime.getManifest().github_url;
+
 document.addEventListener('DOMContentLoaded', () => {
 
   function isPullRequest(url) {
-    return url.includes("https://github.com") && url.includes("/pull/");
+    return url.includes("https://" + github_url) && url.includes("/pull/");
   }
 
   function requestPRStatus(repo, number, tabId, lastModified) {
-    const url = `https://api.github.com/repos/${repo}/pulls/${number}`;
+    const url = `https://api.${github_url}/repos/${repo}/pulls/${number}`;
 
     return makeRequest(url, lastModified).then(response => {
       saveLastModified(response.url, response.headers.get('Last-Modified'));
@@ -16,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function requestCommitStatuses(statusResult) {
-    const url = `https://api.github.com/repos/${statusResult.repoName}/commits/${statusResult.sha}/status`;
+    const url = `https://api.${github_url}/repos/${statusResult.repoName}/commits/${statusResult.sha}/status`;
     return makeRequest(url).then(response => {
       return response.json();
     }).then(jsonData => {
@@ -208,10 +210,10 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     } else {
       if (isPullRequest(tab.url)) {
-        let info = tab.url.split("github.com/")[1];
+        let info = tab.url.split(`${github_url}/`)[1];
         let repo = info.split("/pull/")[0];
         let prNumber = info.split("/pull/")[1].split("/")[0].split("#")[0];
-        requestPRStatus(repo, prNumber, tab.tabId).then(initialStatus => {
+		    requestPRStatus(repo, prNumber, tab.tabId).then(initialStatus => {
           updateStorage(initialStatus);
         });
       }
@@ -234,3 +236,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // chrome.storage.local.get(null, data => {
 //   console.log(data)
 // });
+
+// Send a message to the popup with the github_url value
+chrome.runtime.onConnect.addListener(port => {
+    port.postMessage({ github_url: github_url });
+});
